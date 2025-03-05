@@ -36,8 +36,6 @@ def generate_share(secret : int, n : int, k : int) -> list[int]:
 
 def encrypt(n : int, k : int, img : Image) -> None:
     arr=img.load()
-
-    
     w,h=img.size
     arr = array([[arr[x, y] for y in range(h)] for x in range(w)])
     shares = zeros([n, h, w, 3], dtype=int) 
@@ -52,9 +50,10 @@ def encrypt(n : int, k : int, img : Image) -> None:
                 shares[z][y][x][0]=sharer[z]
                 shares[z][y][x][1]=shareg[z]
                 shares[z][y][x][2]=shareb[z]
+    return shares
     for i in range(n): #saving images
         img=Image.fromarray(shares[i].astype('uint8'))
-        img.save(r"C:\Users\Hp\OneDrive\Desktop\Code\Projects\Shares\share"+str(i+1)+".png")
+        img.save(r"Shares\share"+str(i+1)+".png")
 
 def matrix_mul(A : list, B : list) -> list:  #X= A^-1 x B
     rowA=len(A)
@@ -85,7 +84,7 @@ def decrypt(n : int, shareno : list[int]) -> None:
     shares_blue= [[0] for _ in range(n)]
     for i in range(n):
         #img=Image.open("/content/drive/MyDrive/Shares/share"+str(shareno[i])+".png")
-        img=Image.open(r"C:\Users\Hp\OneDrive\Desktop\Code\Projects\Shares\share"+str(shareno[i])+".png") #opens ith share
+        img=Image.open(r"Shares\share"+str(shareno[i])+".png") #opens ith share
         w,h=img.size 
         red, green, blue = img.split()
         arr_r, arr_g, arr_b=red.load(), green.load(), blue.load()

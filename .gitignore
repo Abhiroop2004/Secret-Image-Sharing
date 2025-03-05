@@ -1,0 +1,5 @@
+*.jpg
+*.png
+Shares
+**/__pycache__/ 
+# ignore all __pycache__ directories
