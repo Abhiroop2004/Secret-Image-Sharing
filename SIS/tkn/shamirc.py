@@ -79,19 +79,27 @@ def solve_linear(shares, n, w, h, share_number) -> list[list[int]]:
     return secret
 
 def decrypt(n : int, shareno : list[int]) -> None:
+    shares = []
+    for i in range(n):
+        img=Image.open(r"Shares\share"+str(shareno[i])+".png") #opens ith share
+        shares.append(array(img))
+    reconstruct(shares, n, shareno)
+
+
+def reconstruct(shares, n, shareno) -> None:
     shares_red= [[0] for _ in range(n)]
     shares_green= [[0] for _ in range(n)]
     shares_blue= [[0] for _ in range(n)]
-    for i in range(n):
-        #img=Image.open("/content/drive/MyDrive/Shares/share"+str(shareno[i])+".png")
-        img=Image.open(r"Shares\share"+str(shareno[i])+".png") #opens ith share
-        w,h=img.size 
-        red, green, blue = img.split()
-        arr_r, arr_g, arr_b=red.load(), green.load(), blue.load()
-        shares_red [i] = array([[arr_r[x, y] for y in range(h)] for x in range(w)])
-        shares_green[i] = array([[arr_g[x, y] for y in range(h)] for x in range(w)])
-        shares_blue[i] = array([[arr_b[x, y] for y in range(h)] for x in range(w)])
-    print(len(shares_red), len(shares_red[0]), len(shares_red[0][0]), len(shares_red[0][0]))
+    for i in range(n):  
+        #print(shares)
+        #print(len(shares[i]), len(shares[i][0]), len(shares[i][0][0]))
+        #return
+        w,h=len(shares[i][0]), len(shares[i])
+        arr_r, arr_g, arr_b = shares[i][:, :, 0], shares[i][:, :, 1], shares[i][:, :, 2]
+        #arr_r, arr_g, arr_b=red.load(), green.load(), blue.load()
+        shares_red [i] = array([[arr_r[y, x] for y in range(h)] for x in range(w)])
+        shares_green[i] = array([[arr_g[y, x] for y in range(h)] for x in range(w)])
+        shares_blue[i] = array([[arr_b[y, x] for y in range(h)] for x in range(w)])
 
     secret_red=solve_linear(array(shares_red), n, w, h, shareno)
     secret_green=solve_linear(array(shares_green), n, w, h, shareno)

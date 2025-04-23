@@ -10,9 +10,12 @@ GF = galois.GF(order, repr='int')
 
 def multi_generate_share(secret : list[int], n : int, k : int) -> list[int]:
     no_secrets = len(secret)
-    equation=[secrets.randbelow(256) for i in range(k-no_secrets)]
+    #equation=[secrets.randbelow(256) for i in range(k-no_secrets)]
+    equation=[]
+    #print("Equation: ", equation, "K: ", k)
     for s in secret:
         equation.append(s)
+    #print("Equation: ", equation)
     shares=[]
     for i in range(1,n+1):
         share = sis.polynomial_GF(equation, i, k)
@@ -21,10 +24,10 @@ def multi_generate_share(secret : list[int], n : int, k : int) -> list[int]:
 
 def multi_encrypt(n : int, k : int, multi_img : list) -> list:
     s = shape(multi_img)
-    w, h = s[2], s[1]
+    w, h = s[2], s[1] 
     #arr = array([[arr[x, y] for y in range(h)] for x in range(w)])
     shares = zeros([n, h, w, 3], dtype=int) 
-    print(s)
+    #print("multi: ",s[0],s[1],s[2], s[3], s)
     for x in range(w): #generate the shares
         for y in range(h):
             secretr, secretg, secretb = multi_img[:, y, x,0], multi_img[:, y, x, 1], multi_img[:, y, x, 2]
@@ -42,7 +45,9 @@ def multi_encrypt(n : int, k : int, multi_img : list) -> list:
 def multi_recon(shares : list, n : int, r : int, w : int, h : int, shareno : list[int]) -> list[list[int]]:
     print("r/k = ",r)
     secret = zeros([h, w, r], dtype=int)
-    A = GF([[sis.power(X, i) for i in range(n - 1, -1, -1)] for X in shareno])
+    A = GF([[sis.power(X, i) for i in range(r - 1, -1, -1)] for X in shareno])
+    print("Shape of A",shape(A))
+    print("Shape of shares",shares)
     A_inv = linalg.inv(A)
     for x in range(w):
         for y in range(h):
@@ -68,19 +73,25 @@ def multi_decrypt(n : int, k : int, shareno : list[int]) -> Image: #1st step for
         shares_blue[i] = array([[arr_b[x, y] for y in range(h)] for x in range(w)])
     print("n,k,w,h for muli recon",n,k,w,h)
     red = multi_recon(array(shares_red), n, k, w, h, shareno)
-    return red
     green = multi_recon(array(shares_green), n, k, w, h, shareno)
     blue = multi_recon(array(shares_blue), n, k, w, h, shareno)
-    secret = stack((red, green, blue), axis=2)
+    print("Red: ",red)
+    secret = zeros([k, h, w, 3], dtype=int)
+    for z in range(k):
+        for x in range(w):
+            for y in range(h):
+                secret[z][y][x][0] = red[y][x][z]
+                secret[z][y][x][1] = green[y][x][z]
+                secret[z][y][x][2] = blue[y][x][z]
+        print("Secret: ", secret)
     return secret
     
 def tkn_encrypt(t : int, k : int, n : int, img : Image):
     kk_shares = sis.encrypt(n = k, k = k, img = img)
     print("KK: ", shape(kk_shares))
     kn_multi_shares = multi_encrypt(n-t, k-t, kk_shares[t:])
+    print(len(kk_shares[:t]), len(kn_multi_shares))
     shares = concatenate((kk_shares[:t], kn_multi_shares), axis=0)
-    print(shape(shares))
-    print(n)
     #print(shape(kk_shares), shape(kn_multi_shares))
     for i in range(n): #saving images
         img=Image.fromarray(shares[i].astype('uint8'))
@@ -90,14 +101,17 @@ def tkn_decrypt(t : int, k : int, n : int, e_shareno : list, shareno : list, pat
     shares=[]
     #for i in shareno:
     #    shares.append(Image.open(path+str(i)+".png"))
-    kk_shares = multi_decrypt(k-t, n-t, shareno) 
-    print("KK: ", shape(kk_shares))
-    return
+    nonessential_shares = multi_decrypt(n-t, k-t, shareno) 
+    essential_shares = [Image.open(path+str(i)+".png") for i in e_shareno]
+    print("All shares: ",array(essential_shares),"\n", nonessential_shares)
+    #return
     #kn_multi_shares = [multi_decrypt(img, ) for img in shares[t:]]
-    shares = concatenate((kk_shares, kn_multi_shares), axis=0)
-    print(shape(shares))
-    print(shape(kk_shares), shape(kn_multi_shares))
-    secret = sis.decrypt(shares)
+    shares = concatenate((essential_shares, nonessential_shares), axis=0)
+    print("Shares: ", shares)
+    kk_shareno = e_shareno + [i for i in range(e_shareno[-1]+1, k+1)]
+    print(e_shareno, shareno, kk_shareno)
+    print("k ", k)
+    secret = sis.reconstruct(shares, k, kk_shareno)
     return secret
 
 file_name="face.jpg"
@@ -127,5 +141,5 @@ else:
     print(shareno)
 
     path = "Shares\share"
-    secret = tkn_decrypt(t,n,k, e_shareno, shareno, path)
+    secret = tkn_decrypt(t,k,n, e_shareno, shareno, path)
     print("Secret: ", secret)
