@@ -1,0 +1,4 @@
+Generation ->
+Multi Sharing Shares: [[[[215 207  50]]] [[[ 83 103  31]]]]
+Reconstruction ->
+Multi Shares: [[[[ 76  48 129]]] [[[100  76  86]]]]

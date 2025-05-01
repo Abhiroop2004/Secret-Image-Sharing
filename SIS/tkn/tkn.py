@@ -43,17 +43,18 @@ def multi_encrypt(n : int, k : int, multi_img : list) -> list:
     return shares
 
 def multi_recon(shares : list, n : int, r : int, w : int, h : int, shareno : list[int]) -> list[list[int]]:
-    print("r/k = ",r)
+    #print("r/k = ",r)
     secret = zeros([h, w, r], dtype=int)
     A = GF([[sis.power(X, i) for i in range(r - 1, -1, -1)] for X in shareno])
-    print("Shape of A",shape(A))
-    print("Shape of shares",shares)
+    #print("Shape of A",shape(A))
+    #print("Share no:",shareno)
     A_inv = linalg.inv(A)
     for x in range(w):
         for y in range(h):
             B = array(shares[:, x, y])
             X = sis.matrix_mul(A_inv, B)
-            print("Shape of X",shape(X))
+            #print("Shape of X",shape(X))
+            #print("X: ", X)
             for z in range(r):
                 secret[y][x][z] = X[-1-z]
     return secret
@@ -63,6 +64,7 @@ def multi_decrypt(n : int, k : int, shareno : list[int]) -> Image: #1st step for
     shares_red= [[0] for _ in range(l)]
     shares_green= [[0] for _ in range(l)]
     shares_blue= [[0] for _ in range(l)]
+    #print(shareno)
     for i in range(l):
         img=Image.open(r"Shares\share"+str(shareno[i])+".png") #opens non-essential shares
         w,h=img.size 
@@ -72,10 +74,11 @@ def multi_decrypt(n : int, k : int, shareno : list[int]) -> Image: #1st step for
         shares_green[i] = array([[arr_g[x, y] for y in range(h)] for x in range(w)])
         shares_blue[i] = array([[arr_b[x, y] for y in range(h)] for x in range(w)])
     print("n,k,w,h for muli recon",n,k,w,h)
+    shareno = [x-t for x in shareno] #adjusting share numbers for t essential participants to start from 0
     red = multi_recon(array(shares_red), n, k, w, h, shareno)
     green = multi_recon(array(shares_green), n, k, w, h, shareno)
     blue = multi_recon(array(shares_blue), n, k, w, h, shareno)
-    print("Red: ",red)
+    #print("Red: ",red)
     secret = zeros([k, h, w, 3], dtype=int)
     for z in range(k):
         for x in range(w):
@@ -83,11 +86,13 @@ def multi_decrypt(n : int, k : int, shareno : list[int]) -> Image: #1st step for
                 secret[z][y][x][0] = red[y][x][z]
                 secret[z][y][x][1] = green[y][x][z]
                 secret[z][y][x][2] = blue[y][x][z]
-        print("Secret: ", secret)
+        #print("Secret: ", secret)
+    print("Multi-Shares : ",secret)
     return secret
     
 def tkn_encrypt(t : int, k : int, n : int, img : Image):
     kk_shares = sis.encrypt(n = k, k = k, img = img)
+    print("Multi Sharing Shares:",kk_shares[t:])
     print("KK: ", shape(kk_shares))
     kn_multi_shares = multi_encrypt(n-t, k-t, kk_shares[t:])
     print(len(kk_shares[:t]), len(kn_multi_shares))
@@ -103,14 +108,14 @@ def tkn_decrypt(t : int, k : int, n : int, e_shareno : list, shareno : list, pat
     #    shares.append(Image.open(path+str(i)+".png"))
     nonessential_shares = multi_decrypt(n-t, k-t, shareno) 
     essential_shares = [Image.open(path+str(i)+".png") for i in e_shareno]
-    print("All shares: ",array(essential_shares),"\n", nonessential_shares)
+    #print("All shares: ",array(essential_shares),"\n", nonessential_shares)
     #return
     #kn_multi_shares = [multi_decrypt(img, ) for img in shares[t:]]
     shares = concatenate((essential_shares, nonessential_shares), axis=0)
-    print("Shares: ", shares)
+    #print("Shares: ", shares)
     kk_shareno = e_shareno + [i for i in range(e_shareno[-1]+1, k+1)]
     print(e_shareno, shareno, kk_shareno)
-    print("k ", k)
+    #print("k ", k)
     secret = sis.reconstruct(shares, k, kk_shareno)
     return secret
 
@@ -142,4 +147,7 @@ else:
 
     path = "Shares\share"
     secret = tkn_decrypt(t,k,n, e_shareno, shareno, path)
-    print("Secret: ", secret)
+    img = Image.open(file_name)
+    print(type(secret), type(img))
+    if (array(img) == array(secret)).all: print("Secret is same as original image")
+    else: print("Secret is not same as original image")

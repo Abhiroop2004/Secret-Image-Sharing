@@ -107,6 +107,7 @@ def reconstruct(shares, n, shareno) -> None:
     secret = stack((secret_red, secret_green, secret_blue), axis=-1)
     secret_img=Image.fromarray(secret.astype('uint8'))
     secret_img.save("secret.png")
+    return secret_img
 
 def main():
     print("Visual Cryptography (k,n) Scheme ")
