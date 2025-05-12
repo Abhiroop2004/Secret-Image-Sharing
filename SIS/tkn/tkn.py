@@ -3,7 +3,7 @@
 import shamirc as sis
 import secrets, galois
 from PIL import Image
-from numpy import zeros,array,size,poly, matmul, shape, linalg, loadtxt, stack, concatenate
+from numpy import zeros,array,size,poly, matmul, shape, linalg, loadtxt, stack, concatenate, flip
 
 order=2**8
 GF = galois.GF(order, repr='int')
@@ -56,7 +56,8 @@ def multi_recon(shares : list, n : int, r : int, w : int, h : int, shareno : lis
             #print("Shape of X",shape(X))
             #print("X: ", X)
             for z in range(r):
-                secret[y][x][z] = X[-1-z]
+                #secret[y][x][z] = X[-1-z]
+                secret[y][x][z] = X[z]
     return secret
 
 def multi_decrypt(n : int, k : int, shareno : list[int]) -> Image: #1st step for decryption
@@ -75,6 +76,8 @@ def multi_decrypt(n : int, k : int, shareno : list[int]) -> Image: #1st step for
         shares_blue[i] = array([[arr_b[x, y] for y in range(h)] for x in range(w)])
     print("n,k,w,h for muli recon",n,k,w,h)
     shareno = [x-t for x in shareno] #adjusting share numbers for t essential participants to start from 0
+
+    #print("Multi Shareno: ", shareno)
     red = multi_recon(array(shares_red), n, k, w, h, shareno)
     green = multi_recon(array(shares_green), n, k, w, h, shareno)
     blue = multi_recon(array(shares_blue), n, k, w, h, shareno)
@@ -87,7 +90,7 @@ def multi_decrypt(n : int, k : int, shareno : list[int]) -> Image: #1st step for
                 secret[z][y][x][1] = green[y][x][z]
                 secret[z][y][x][2] = blue[y][x][z]
         #print("Secret: ", secret)
-    print("Multi-Shares : ",secret)
+    #print("Multi-Shares : ",secret)
     return secret
     
 def tkn_encrypt(t : int, k : int, n : int, img : Image):
@@ -95,7 +98,8 @@ def tkn_encrypt(t : int, k : int, n : int, img : Image):
     print("Multi Sharing Shares:",kk_shares[t:])
     print("KK: ", shape(kk_shares))
     kn_multi_shares = multi_encrypt(n-t, k-t, kk_shares[t:])
-    print(len(kk_shares[:t]), len(kn_multi_shares))
+    print("Multi Shares before enc: ", kk_shares[t:],"\n")
+    print("Essential Shares: ", kk_shares[:t],"\n")
     shares = concatenate((kk_shares[:t], kn_multi_shares), axis=0)
     #print(shape(kk_shares), shape(kn_multi_shares))
     for i in range(n): #saving images
@@ -107,11 +111,13 @@ def tkn_decrypt(t : int, k : int, n : int, e_shareno : list, shareno : list, pat
     #for i in shareno:
     #    shares.append(Image.open(path+str(i)+".png"))
     nonessential_shares = multi_decrypt(n-t, k-t, shareno) 
+    print("Non-essential shares: ", nonessential_shares, "\n")
     essential_shares = [Image.open(path+str(i)+".png") for i in e_shareno]
     #print("All shares: ",array(essential_shares),"\n", nonessential_shares)
     #return
     #kn_multi_shares = [multi_decrypt(img, ) for img in shares[t:]]
-    shares = concatenate((essential_shares, nonessential_shares), axis=0)
+    shares = concatenate((array(essential_shares), nonessential_shares), axis=0)
+    print("Essential: ",array(essential_shares))
     #print("Shares: ", shares)
     kk_shareno = e_shareno + [i for i in range(e_shareno[-1]+1, k+1)]
     print(e_shareno, shareno, kk_shareno)
@@ -120,12 +126,10 @@ def tkn_decrypt(t : int, k : int, n : int, e_shareno : list, shareno : list, pat
     return secret
 
 file_name="face.jpg"
-#t=int(input("Enter no. of essential shares(t): "))
-#n= int(input("Enter no of shares(n): "))
-#k=int(input("Enter minimum shares to reveal secret(k): "))
-t = 1
-k = 3
-n = 5
+#file_name="test_1.png"
+t=int(input("Enter no. of essential shares(t): "))
+n= int(input("Enter no of shares(n): "))
+k=int(input("Enter minimum shares to reveal secret(k): "))
 c=int(input("Enter 1 for encryption and 0 for decryption: "))
 if (c==1):
     img=Image.open(file_name)
@@ -148,6 +152,6 @@ else:
     path = "Shares\share"
     secret = tkn_decrypt(t,k,n, e_shareno, shareno, path)
     img = Image.open(file_name)
-    print(type(secret), type(img))
+    print(array(secret), array(img))
     if (array(img) == array(secret)).all: print("Secret is same as original image")
     else: print("Secret is not same as original image")

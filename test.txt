@@ -1,4 +1,100 @@
-Generation ->
-Multi Sharing Shares: [[[[215 207  50]]] [[[ 83 103  31]]]]
-Reconstruction ->
-Multi Shares: [[[[ 76  48 129]]] [[[100  76  86]]]]
+1 4 6 Scheme
+
+Multi Shares before enc:  [[[[ 76 217 121]]]
+
+
+ [[[226 215 252]]]
+
+
+ [[[207   4 142]]]]
+
+Essential Shares:  [[[[ 73 234  54]]]]
+
+
+Non-essential shares:  [[[[207   4 142]]]
+
+
+ [[[226 215 252]]]
+
+
+ [[[ 76 217 121]]]] 
+
+Essential:  [[[[ 73 234  54]]]]
+
+
+Non-essential shares:  [[[[ 76 217 121]]]
+
+
+ [[[226 215 252]]]
+
+
+ [[[207   4 142]]]] 
+
+Essential:  [[[[ 73 234  54]]]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 1 3 5 Scheme
+
+Multi Shares before enc:  [[[[167 153  31]]]
+
+
+ [[[177 237  96]]]]
+
+Essential Shares:  [[[[230  43  50]]]]
+
+
+Non-essential shares:  
+[[[[177 237  96]]]
+
+ [[[167 153  31]]]] 
+
+Essential:  [[[[230  43  50]]]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+2 4 6 Scheme
+
+Multi Shares before enc:  [[[[236 138 164]]]
+
+
+ [[[ 54 173 223]]]]
+
+Essential Shares:  [[[[ 76 194 105]]]
+
+
+ [[[175 148  42]]]]
+
+
+
+ Non-essential shares:  [[[[236 138 164]]]
+
+
+ [[[ 54 173 223]]]] 
+
+Essential:  [[[[ 76 194 105]]]
+
+
+ [[[175 148  42]]]]
