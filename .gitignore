@@ -1,5 +1,4 @@
-*.jpg
-*.png
 Shares
 **/__pycache__/ 
+secret.png
 # ignore all __pycache__ directories
