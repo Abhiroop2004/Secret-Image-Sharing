@@ -101,7 +101,7 @@ class TKN:
         #print("Multi-Shares : ",secret)
         return secret
         
-    def tkn_encrypt(self, t : int, k : int, n : int, file : str, dest : str = "Shares" ):
+    def tkn_encrypt(self, t : int, k : int, n : int, file : str, dest : str):
         #img = Image.open(file_name)
         kk_shares = sis.encrypt(n = k, k = k, file_name = file, dest = dest, save = 0)
         #print("Multi Sharing Shares:",kk_shares[t:])
@@ -134,9 +134,9 @@ class TKN:
         secret.save("secret.png")
         #return secret
 
-    def encrypt(self, t : int, k : int, n :int, file_name : str):
+    def encrypt(self, t : int, k : int, n :int, file_name : str, dest : str = "Shares") -> None:
         #img=Image.open(file_path)
-        return self.tkn_encrypt(t,k,n,file_name)
+        return self.tkn_encrypt(t , k, n , file_name, dest)
 
     def decrypt(self, e_shareno : list[int], shareno : list[int], share_path : str = "Shares"):
         t = len(e_shareno)

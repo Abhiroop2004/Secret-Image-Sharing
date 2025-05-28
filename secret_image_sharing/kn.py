@@ -38,7 +38,7 @@ class KN:
             shares.append(share)
         return shares
 
-    def encrypt(self , n : int, k : int, file_name : str, dest : str = "Shares", save : int = 1) -> array:
+    def encrypt(self , n : int, k : int, file_name : str, dest : str = "Shares", save : int = 1) -> any:
         os.makedirs(dest, exist_ok=True)
         #print(current_dir.removesuffix("secret_image_sharing"))
         img  = Image.open(current_dir.removesuffix("secret_image_sharing")+file_name)
@@ -61,7 +61,7 @@ class KN:
             for i in range(n): #saving images
                 img=Image.fromarray(shares[i].astype('uint8'))
                 img.save(dest+r"\share"+str(i+1)+".png")
-        return shares
+        else: return shares
 
     def matrix_mul(self, A : list, B : list) -> list:  #X= A^-1 x B
         rowA=len(A)
